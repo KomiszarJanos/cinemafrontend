@@ -1,8 +1,8 @@
-import { ref, computed } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import { defineStore } from 'pinia'
 
 export const useCounterStore = defineStore('counter', () => {
-  const movies= ref(
+const movies= ref(
      [
 		{
 			"id": 1,
@@ -42,54 +42,78 @@ export const useCounterStore = defineStore('counter', () => {
 		}
 	]);
   
-  function removeMovie(id) {
-    movies.value = movies.value.filter((movie) => movie.id !== id);
-  }
-  function editMovie(id) {
+const Id=ref();
+const Name=ref();
+const Description=ref();
+const Image=ref();
+const InTheaters=ref();
+const Genres=ref();
+const Rating=ref();
+
+const form = reactive({
+  id: Id,
+  name: Name,
+  description: Description,
+  image: Image,
+  inTheaters: InTheaters,
+  genres: Genres,
+  rating: Rating });
+
+const currentMovie=ref();
+
+function removeMovie(id) {movies.value = movies.value.filter((movie) => movie.id !== id);}
+
+function editMovie(id) {
+    
     currentMovie.value = movies.value.find((movie) => movie.id === id);
-    showForm();
-  }
+    Id.value=currentMovie.value.id;
+    Name.value=currentMovie.value.name;
+    Description.value=currentMovie.value.description;
+    Image.value=currentMovie.value.image;
+    Rating.value=currentMovie.value.rating;
+    Genres.value=currentMovie.value.genres;
+    InTheaters.value=currentMovie.value.inTheaters;
+    console.log(form);
+    showForm(); }
+
+function saveMovie() {
+    const isNotNew = movies.value.find((movie) => movie.id === form.id);
+    if (!isNotNew) { 
+      Id.value=Number(Date.now());
+      movies.value.push({...form});} 
+    else { console.log('update'); updateMovie(form); }
+    hideForm(); }
+
+function updateMovie(data) { movies.value = movies.value.map((m) => {
+        if (m.id === data.id) { data.rating = m.rating; return data; }
+        return m; });  }
+
+
+const showMovieForm = ref(false);
   
-  const showMovieForm = ref(false);
-  
-  function hideForm() {
-    showMovieForm.value = false;
-    currentMovie.value = null;
-  }
-  function showForm() {
-    showMovieForm.value = true;
-  }
-  const averageRating = computed(() => {
-    const avg = movies.value
-      .map((movie) => parseInt(movie.rating || 0))
+function hideForm() { showMovieForm.value = false; currentMovie.value = null; }
+
+function showForm() { showMovieForm.value = true; }
+
+const averageRating = computed(() => {
+      const avg = movies.value.map((movie) => parseInt(movie.rating || 0))
       .reduce((a, b) => a + b, 0);
-    return Number(avg / movies.value.length).toFixed(1);
+      return Number(avg / movies.value.length).toFixed(1);
   });
-  const totalMovies = computed(() => {
-    return movies.value.length;
-  });
-  function removeRatings() {
-    movies.value = movies.value.map((movie) => {
-      movie.rating = null;
-      return movie;
-    })};
-    function saveMovie(data) {
-      const isNew = !!movies.value.find((movie) => movie.id === data.id);
-      if (!isNew) {
-        addMovie(data);
-      } else {
-        updateMovie(data);
-      } }
-      function updateRating(id, rating) {
+
+const totalMovies = computed(() => {return movies.value.length;});
+
+function removeRatings() { movies.value = movies.value.map((movie) => {
+      movie.rating = null; return movie;  })};
+    
+function updateRating(id, rating) {
         movies.value = movies.value.map((movie) => {
-          if (movie.id === id) {
-            movie.rating = rating;
-          }
-          return movie;
-        });
-      }
-  
+          if (movie.id === id) { movie.rating = rating; }
+          return movie;  });  }
+const notRated = computed(() => { return Boolean(movies.rating); });
   
 
-  return { movies, showMovieForm, hideForm, showForm, saveMovie, totalMovies, averageRating, removeRatings, removeMovie, editMovie, updateRating }
+  return { notRated, movies, showMovieForm, hideForm, showForm, saveMovie, 
+    totalMovies, averageRating, removeRatings, removeMovie, editMovie, updateRating,
+  Name, Genres, Description,InTheaters, Id, Image, Rating, form }
 })
