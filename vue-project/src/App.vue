@@ -3,7 +3,15 @@ import { useCounterStore } from "./stores/counter";
 import { PencilIcon, StarIcon, TrashIcon } from '@heroicons/vue/24/solid';
 import MovieForm from '@/components/MovieForm.vue'
 import AppModal from  '@/components/AppModal.vue'
+import {onMounted, ref} from 'vue'
 const Store=useCounterStore();
+const films=ref();
+
+onMounted(()=>{
+  axios.get('http://localhost:3000/api/films').then(resp=>{films.value=resp.data.films})
+})
+
+
 
 </script>
 
@@ -33,7 +41,7 @@ const Store=useCounterStore();
   </div>
   <div class="row justify-content-center align-items-flex gap-0">
     <div class="col-sm-12 col-md-6 col-lg-4 d-flex align-items-stretch my-2 group"
-        v-for="movie in Store.movies"  :key="movie.id" >
+        v-for="movie in films"  :key="movie.id" >
       <div class="align-items-center p-0 m-3 position-relative">
          <div class="position-absolute top-0 end-0">
               <StarIcon id="rating" class="starwidth"
